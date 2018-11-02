@@ -8,61 +8,60 @@
 #define false 0
 
 typedef struct pouso{
-    char codigoDeVoo[7];
-    char tipoDeVoo[2];
+    char codigoDeVooA[7];
+    char tipoDeVooA[2];
     int combustivel;
 } Pouso;
 
 //lista de pouso
 typedef struct listaPouso{
 	void *pouso;	
-	struct lista1 *prox;
+	struct listaPouso *prox;
 } ListaPouso;
 
 // cabeçalho de pouso
-typedef struct header1{
-	ListaPouso *head; //ponteiro p o primero elemento da lista
-	ListaPouso *tail; //ponteiro p o ultimo elemento da lista
-    int qntdElemetos;
-} Header1;
+typedef struct headerA{
+	ListaPouso *headA; //ponteiro p o primero elemento da lista
+	ListaPouso *tailA; //ponteiro p o ultimo elemento da lista
+    int qntdElemetosA;
+} HeaderA;
 
 typedef struct decolagem{
-    char codigoDeVoo[7];
-    char tipoDeVoo[2];
+    char codigoDeVooD[7];
+    char tipoDeVooD[2];
 } Decolagem;
 
-//lista da decolagem
 typedef struct listaDecolagem{
 	void *decolagem;	
-	struct lista1 *prox;
+	struct listaDecolagem *proxD;
 } ListaDecolagem;
 
-// cabeçalho da decolagem
-typedef struct header2{
-	ListaDecolagem *head; //ponteiro p o primero elemento da lista
-	ListaDecolagem *tail; //ponteiro p o ultimo elemento da lista
-    int qntdElemetos;
-} Header2;
-
+typedef struct headerD{
+	ListaDecolagem *headD; //ponteiro p o primero elemento da lista
+	ListaDecolagem *tailD; //ponteiro p o ultimo elemento da lista
+    int qntdElemetosD;
+} HeaderD;
 
 int numeroAprox();
 int numeroDecolagem();
 int numCombustivel();
-Header1 *inicializaHeader1();
+int listaVazia(HeaderA *header);
+int listaVaziaD(HeaderD *header);
+int * randomizar(int n);
+HeaderA *inicializaHeader1();
 Pouso *novoPouso(char codigoDeVoo[7]);
-void inserePouso(Header1 *header, Pouso *pouso);
-void insereDecolagem(Header2 *header, Decolagem *decolagem);
-void visualizar(Header1 *header);
-void visualizar2(Header2 *header);
-int listaVazia(Header1 *header);
-int listaVazia2(Header2 *header);
-Header2 *inicializaHeader2();
+void inserePouso(HeaderA *header, Pouso *pouso);
+void visualizar(HeaderA *header);
+HeaderD *inicializaHeaderD();
 Decolagem *novaDecolagem(char codigoDeVoo[7]);
+void insereDecolagem(HeaderD *header, Decolagem *decolagemS);
+void visualizarD(HeaderD *header);
+void mensagem1(int numapro, int numdeco, int numtotal,HeaderA *header);
+
 
 int main (int argc, char *argv[]){
-    Header1 *inicioPouso = inicializaHeader1();
-    Header2 *inicioDecolagem = inicializaHeader2();
-
+    HeaderA *inicioPouso = inicializaHeader1();
+    HeaderD *iniciaDeco = inicializaHeaderD();
     char codigoDeVoo[64][7]={"VG3001" , "JJ4404", "LN7001", "TG1501", "GL7602", "TT1010", "AZ1009",
                              "AZ1008","AZ1010", "TG1506", "VG3002", "JJ4402", "GL7603", "RL7880", 
                              "AL0012","TT4544", "TG1505", "VG3003", "JJ4403", "JJ4401", "LN7002", 
@@ -77,19 +76,19 @@ int main (int argc, char *argv[]){
     int numAprox = numeroAprox();
     int numDeco = numeroDecolagem();
     int numVoos= numAprox+numDeco;
+    int *array;
+    array = randomizar(numVoos);
 
     for(int i = 0; i<numAprox; i++){
-        inserePouso(inicioPouso, novoPouso(codigoDeVoo[i]));
+        inserePouso(inicioPouso, novoPouso(codigoDeVoo[array[i]]));
     }
-    printf("Numero de pousos %d\n", inicioPouso->qntdElemetos);
-    visualizar(inicioPouso);
+    
+    mensagem1(numAprox, numDeco, numVoos,inicioPouso);
 
     for(int i = 0; i<numDeco; i++){
-        insereDecolagem(inicioDecolagem, novaDecolagem(codigoDeVoo[i+numAprox]));
+        insereDecolagem(iniciaDeco, novaDecolagem(codigoDeVoo[array[i]]));
     }
-    printf("Numero de decolagem %d\n", inicioDecolagem->qntdElemetos);
-    visualizar2(inicioDecolagem);
-
+    visualizarD(iniciaDeco);
     return 0;
 }
 
@@ -109,136 +108,152 @@ int numCombustivel(){
     return numCombustivel;
 }
 
-Header1 *inicializaHeader1() {
-	Header1 *header1 = (Header1*) malloc(sizeof(Header1));;
-    header1->head = NULL;
-    header1->tail = NULL;
-    header1->qntdElemetos = 0;
-	return header1;
+HeaderA *inicializaHeader1() {
+	HeaderA *headerA = (HeaderA*) malloc(sizeof(HeaderA));;
+    headerA->headA = NULL;
+    headerA->tailA = NULL;
+    headerA->qntdElemetosA = 0;
+	return headerA;
 }
-
-Header2 *inicializaHeader2() {
-	Header2 *header2 = (Header2*) malloc(sizeof(Header2));;
-    header2->head = NULL;
-    header2->tail = NULL;
-    header2->qntdElemetos = 0;
-	return header2;
-}
-
 Pouso *novoPouso(char codigoDeVoo[7]){
     Pouso * novoPouso= (Pouso*) malloc(sizeof(Pouso));
     if(novoPouso == NULL) {
         printf("Novo pouso não criado\n");
     }
-    strcpy(novoPouso->codigoDeVoo, codigoDeVoo);
-    strcpy(novoPouso->tipoDeVoo, "A");
+    strcpy(novoPouso->codigoDeVooA, codigoDeVoo);
+    strcpy(novoPouso->tipoDeVooA, "A");
     novoPouso->combustivel = numCombustivel();
 }
 
-Decolagem *novaDecolagem(char codigoDeVoo[7]){
-    Decolagem * novaDecolagem= (Decolagem*) malloc(sizeof(Decolagem));
-    if(novaDecolagem == NULL) {
-        printf("Nova decolagem não criado\n");
-    }
-    strcpy(novaDecolagem->codigoDeVoo, codigoDeVoo);
-    strcpy(novaDecolagem->tipoDeVoo, "D");
-}
-
-void inserePouso(Header1 *header, Pouso *pouso){
+void inserePouso(HeaderA *header, Pouso *pouso){
     ListaPouso *novoElemento = (ListaPouso*) malloc(sizeof(ListaPouso));
     if(novoElemento == NULL) {
         printf("Pouso nao pode ser inserido na lista!\n");
     }
 
     novoElemento->pouso = pouso;
-    header->qntdElemetos++;
+    header->qntdElemetosA++;
 
-    if(header->head == NULL) {
-        header->head = novoElemento;
-        header->tail = novoElemento;
+    if(header->headA == NULL) {
+        header->headA = novoElemento;
+        header->tailA = novoElemento;
         novoElemento->prox = NULL;
     }
     else {
         novoElemento->prox = NULL;
-        header->tail->prox = novoElemento;
-        header->tail = novoElemento;
+        header->tailA->prox = novoElemento;
+        header->tailA = novoElemento;
     }
 
 }
 
-void insereDecolagem(Header2 *header, Decolagem *decolagem){
-    ListaDecolagem *novoElemento = (ListaDecolagem*) malloc(sizeof(ListaDecolagem));
-    if(novoElemento == NULL) {
-        printf("Pouso nao pode ser inserido na lista!\n");
-    }
-
-    novoElemento->decolagem = decolagem;
-    header->qntdElemetos++;
-
-    if(header->head == NULL) {
-        header->head = novoElemento;
-        header->tail = novoElemento;
-        novoElemento->prox = NULL;
-    }
-    else {
-        novoElemento->prox = NULL;
-        header->tail->prox = novoElemento;
-        header->tail = novoElemento;
-    }
-
-}
-
-void visualizar(Header1 *header) {
+void visualizar(HeaderA *header) {
     ListaPouso *aux;
-    
-    printf("---------------------------------- \n");
-    printf("          Lista de Pouso       \n");    
-    printf("----------------------------------\n");
-    
     if(listaVazia(header)) {
         printf("Lista vazia!\n\n");
         return;
     }
-
-    for(aux = header->head; aux != NULL; aux = aux->prox) {
+    for(aux = header->headA; aux != NULL; aux = aux->prox) {
         Pouso *pouso = (Pouso *)aux->pouso;
-        printf("Codigo do voo: %s\n", pouso->codigoDeVoo);
-        printf("tipoDeVoo: %s\n", pouso->tipoDeVoo);
-        printf("Combustivel: %d\n", pouso->combustivel);
+        printf("%s - %s - %d\n", pouso->codigoDeVooA, pouso->tipoDeVooA, pouso->combustivel);
     }
 }
 
-void visualizar2(Header2 *header) {
-    ListaDecolagem *aux2;
+int listaVazia(HeaderA *header) {
+    if(header->headA == NULL) {
+        return true;
+    }
+    return false;
+}
+
+HeaderD *inicializaHeaderD() {
+	HeaderD *headerD = (HeaderD*) malloc(sizeof(HeaderD));;
+    headerD->headD = NULL;
+    headerD->tailD = NULL;
+    headerD->qntdElemetosD = 0;
+	return headerD;
+}
+Decolagem *novaDecolagem(char codigoDeVoo[7]){
+    Decolagem * novaDecolagem= (Decolagem*) malloc(sizeof(Decolagem));
+    if(novaDecolagem == NULL) {
+        printf("Novo pouso não criado\n");
+    }
+    strcpy(novaDecolagem->codigoDeVooD, codigoDeVoo);
+    strcpy(novaDecolagem->tipoDeVooD, "D");
+}
+
+void insereDecolagem(HeaderD *header, Decolagem *decolagem){
+    ListaDecolagem *novoEleDeco = (ListaDecolagem*) malloc(sizeof(ListaDecolagem));
+    if(novoEleDeco == NULL) {
+        printf("Pouso nao pode ser inserido na lista!\n");
+    }
+
+    novoEleDeco->decolagem = decolagem;
+    header->qntdElemetosD++;
+
+    if(header->headD == NULL) {
+        header->headD = novoEleDeco;
+        header->tailD = novoEleDeco;
+        novoEleDeco->proxD = NULL;
+    }
+    else {
+        novoEleDeco->proxD = NULL;
+        header->tailD->proxD = novoEleDeco;
+        header->tailD = novoEleDeco;
+    }
+
+}
+
+void visualizarD(HeaderD *header) {
+    ListaDecolagem *auxD;
     
     printf("---------------------------------- \n");
-    printf("          Lista de Decolagem      \n");    
+    printf("          Lista de Decolagem       \n");    
     printf("----------------------------------\n");
     
-    if(listaVazia2(header)) {
+    if(listaVaziaD(header)) {
         printf("Lista vazia!\n\n");
         return;
     }
 
-    for(aux2 = header->head; aux2 != NULL; aux2 = aux2->prox) {
-        Decolagem *decolagem = (Decolagem *)aux2->decolagem;
-        printf("Codigo do voo: %s\n", decolagem->codigoDeVoo);
-        printf("tipoDeVoo: %s\n", decolagem->tipoDeVoo);
+    for(auxD = header->headD; auxD != NULL; auxD = auxD->proxD) {
+        Decolagem *decolagem = (Decolagem *)auxD->decolagem;
+        printf("Codigo do voo: %s\n", decolagem->codigoDeVooD);
+        printf("tipoDeVoo: %s\n", decolagem->tipoDeVooD);
     }
 }
 
-
-
-int listaVazia(Header1 *header) {
-    if(header->head == NULL) {
+int listaVaziaD(HeaderD *header) {
+    if(header->headD == NULL) {
         return true;
     }
     return false;
 }
 
-int listaVazia2(Header2 *header) {
-    if(header->head == NULL) {
-        return true;
+int * randomizar(int n){
+
+    srand(time(0));
+	int i;
+    int * array = (int *) calloc (n, sizeof (int));
+    for (i = 0; i < n; ++i) {
+        array[i] = i;
     }
-    return false;
+ 	for ( i = 0; i < n; i++) {
+    	int temp = array[i];
+   		int randomIndex = rand() % n;
+  		array[i]= array[randomIndex];
+    	array[randomIndex] = temp;
+	}
+    return array;
+}
+
+void mensagem1(int numapro, int numdeco, int numtotal,HeaderA *header){
+    printf("Aeroporto Internacional de Brasilia\n");
+    printf("Hora incial:\n");
+    printf("Fila de Pedidos:\n");
+    visualizar(header);
+    printf("Numero de voos:%d\n", numtotal);
+    printf("Numero de aproximações:%d\n", numapro);
+    printf("Numero de decolagens:%d\n", numdeco);
+
 }

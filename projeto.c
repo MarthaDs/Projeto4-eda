@@ -31,14 +31,14 @@ typedef struct decolagem{
     char tipoDeVooD[2];
 } Decolagem;
 
-typedef struct listaDecolagem{
+typedef struct nodeDecolagem{
 	void *decolagem;	
-	struct listaDecolagem *proxD;
-} ListaDecolagem;
+	struct nodeDecolagem *proxD;
+} NodeDecolagem;
 
 typedef struct headerD{
-	ListaDecolagem *inicioD; //ponteiro p o primero elemento da lista
-	ListaDecolagem *finalD; //ponteiro p o ultimo elemento da lista
+	NodeDecolagem *inicioD; //ponteiro p o primero elemento da lista
+	NodeDecolagem *finalD; //ponteiro p o ultimo elemento da lista
     int qntdElemetosD;
 } HeaderD;
 
@@ -56,9 +56,13 @@ HeaderD *inicializaHeaderD();
 Decolagem *novaDecolagem(char codigoDeVoo[7]);
 void insereDecolagem(HeaderD *header, Decolagem *decolagemS);
 void visualizarD(HeaderD *header);
-void mensagem1(int numapro, int numdeco, int numtotal,HeaderA *header, HeaderD *header2);
+void mensagem1(int numapro, int numdeco, int numtotal,HeaderA *header, HeaderD *header2,int);
 void ordena (HeaderA *header);
-
+void printaA(HeaderA *listaA, int horario, int pista);
+void printaD(HeaderD *listaD, int horario, int pista);
+void retiraD(HeaderD *listaD);
+void retiraA(HeaderA *listaA);
+void pistas(HeaderA *listaA, HeaderD *listaD, int horas);
 
 int main (int argc, char *argv[]){
     HeaderA *inicioPouso = inicializaHeader1();
@@ -78,6 +82,7 @@ int main (int argc, char *argv[]){
     int numDeco = numeroDecolagem();
     int numVoos= numAprox+numDeco;
     int *array;
+    int hora = 480; //8 horas
     array = randomizar(numVoos);
 
     for(int i = 0; i<numAprox; i++){
@@ -89,10 +94,10 @@ int main (int argc, char *argv[]){
         insereDecolagem(iniciaDeco, novaDecolagem(codigoDeVoo[array[i]]));
     }
 
-    mensagem1(numAprox, numDeco, numVoos,inicioPouso,iniciaDeco);
+    ordena (inicioPouso);
+    mensagem1(numAprox, numDeco, numVoos,inicioPouso,iniciaDeco, hora); 
 
-     ordena (inicioPouso);
-    mensagem1(numAprox, numDeco, numVoos,inicioPouso,iniciaDeco); 
+    pistas(inicioPouso, iniciaDeco, hora);
     return 0;
 }
 
@@ -189,7 +194,7 @@ Decolagem *novaDecolagem(char codigoDeVoo[7]){
 }
 
 void insereDecolagem(HeaderD *header, Decolagem *decolagem){
-    ListaDecolagem *novoEleDeco = (ListaDecolagem*) malloc(sizeof(ListaDecolagem));
+    NodeDecolagem *novoEleDeco = (NodeDecolagem*) malloc(sizeof(NodeDecolagem));
     if(novoEleDeco == NULL) {
         printf("Pouso nao pode ser inserido na lista!\n");
     }
@@ -211,7 +216,7 @@ void insereDecolagem(HeaderD *header, Decolagem *decolagem){
 }
 
 void visualizarD(HeaderD *header) {
-    ListaDecolagem *aux;
+    NodeDecolagem *aux;
     if(listaVaziaD(header)) {
         printf("Lista vazia!\n\n");
         return;
@@ -246,9 +251,9 @@ int * randomizar(int n){
     return array;
 }
 
-void mensagem1(int numapro, int numdeco, int numtotal,HeaderA *header, HeaderD *header2){
+void mensagem1(int numapro, int numdeco, int numtotal,HeaderA *header, HeaderD *header2, int horas){
     printf("Aeroporto Internacional de Brasilia\n");
-    printf("Hora incial:\n");
+    printf("Hora incial: %d:%d\n", horas/60, horas%60);
     printf("Fila de Pedidos:\n");
     visualizar(header);
     visualizarD(header2);
@@ -264,18 +269,19 @@ void ordena (HeaderA *header){
     if(listaVazia(header) == true){
         return;
     }
-    int j = header->qntdElemetosA;
-    
-    for(int k = 0; k<(j-1); k++){
-        NodePouso *p1 = (NodePouso *)header->inicioA;
-        for (int i = 0; i <(j-1); i++){ 
-            NodePouso *p2 = (NodePouso *)p1->prox;
+    NodePouso *p1 = (NodePouso*) malloc(sizeof(NodePouso));
+    NodePouso *p2 = (NodePouso*) malloc(sizeof(NodePouso));
+
+    for(int k = 0; k<((header->qntdElemetosA)-1); k++){
+
+        p1 = (NodePouso *)header->inicioA;
+
+        for (int i = 0; i <((header->qntdElemetosA)-1); i++){ 
+
+            p2 = (NodePouso *)p1->prox;
             Pouso * a = (Pouso *)p1->pouso;
             Pouso * b = (Pouso *)p2->pouso;
             if (a->combustivel > b->combustivel){
-                if (p1 == header->inicioA){
-                    header->inicioA = p2;
-                }
                 strcpy(tempCodigo, a->codigoDeVooA);
                 tempCombustivel= a->combustivel;
                 strcpy(a->codigoDeVooA, b->codigoDeVooA);
@@ -284,6 +290,134 @@ void ordena (HeaderA *header){
                 b->combustivel = tempCombustivel;
             }
             p1 = p1->prox;
+
         }
     }
+    //free(p1);
+    //free(p2);
+}
+
+void pistas(HeaderA *listaA, HeaderD *listaD, int horas){
+    int incrementa = 5;
+    int contadorCombs = 0;
+    int pista1=0,pista2=0,pista3=0;// 0 = liberado
+    int pouso = 0;
+    int decolagem = 0;
+    printf("\n");
+    printf("Lista de eventos:\n");
+    printf("\n");
+    int condicao= 0;
+    while(condicao==0){
+         if(listaA->inicioA==NULL && listaD->inicioD==NULL){
+            condicao=1;
+        }
+        else{
+            if (pista1 == 0){
+                if(listaA->inicioA != NULL){ //aterriza
+                    pista1 = 3;
+                    pouso++;
+                    printaA(listaA, horas,1);
+                    retiraA(listaA);
+                }
+                else if(listaD->inicioD != NULL){//decola
+                    pista1 = 1;
+                    decolagem++;
+                    printaD(listaD,horas,1);
+                    retiraD(listaD);
+                }
+            }
+            else{
+                pista1--;
+            }
+
+            if (pista2 == 0){ //aterriza
+                if(listaA->inicioA != NULL){
+                    pouso++;
+                    pista2 = 3;
+                    printaA(listaA, horas,2);
+                    retiraA(listaA);
+                }
+                else if(listaD->inicioD != NULL){//decola
+                    pista2 = 1;
+                    decolagem++;
+                    printaD(listaD,horas,2);
+                    retiraD(listaD);
+                }
+            }
+            else{
+                pista2--;
+            }
+
+            if(pista3 == 0){
+                if(listaA->inicioA != NULL){
+                    Pouso *pouso = (Pouso*)listaA->inicioA->pouso;
+                    if(pouso->combustivel == 0){
+                        pista3 = 3;
+                        pouso++;
+                        printaA(listaA, horas,3);
+                        retiraA(listaA);
+                    }
+                    else if(listaD->inicioD != NULL){
+                        pista3 = 1;
+                        decolagem++;
+                        printaD(listaD,horas,3);
+                        retiraD(listaD);
+                    }
+                }
+                else if(listaD->inicioD != NULL){
+                    pista3 = 1;
+                    decolagem++;
+                    printaD(listaD,horas,3);
+                    retiraD(listaD);
+                }
+
+            }
+            else{
+                pista3--;
+            }
+            
+            contadorCombs ++;
+            horas += incrementa;
+
+            if(contadorCombs%10 == 0){
+                //decrementa combustivel
+                //verifica se avião caiu
+            }
+        }
+    }
+    printf("pouso: %d - decolage: %d\n", pouso, decolagem);
+}
+
+void retiraA(HeaderA *listaA){
+    NodePouso *primeroPouso = (NodePouso *)listaA->inicioA;
+    listaA->inicioA = primeroPouso->prox;
+    free(primeroPouso);
+}
+
+void retiraD(HeaderD *listaD){
+    NodeDecolagem *primeraDeco = (NodeDecolagem *)listaD->inicioD;
+    listaD->inicioD = primeraDeco->proxD;
+    free(primeraDeco);
+}
+
+void printaA(HeaderA *listaA, int horario, int pista){
+    char codigoDeVoo[7];
+    Pouso *pouso = (Pouso *)listaA->inicioA->pouso;
+    strcpy(codigoDeVoo,pouso->codigoDeVooA);
+     printf("\n");
+    printf("Codigo de voo: %s\n", codigoDeVoo);
+    printf("Status: aeronave pouso\n");
+    printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
+    printf("Numero da pista: %d\n", pista);
+}
+
+void printaD(HeaderD *listaD, int horario, int pista){
+    char codigoDeVoo[7];
+    Decolagem *decolagem = (Decolagem *)listaD->inicioD->decolagem;
+    strcpy(codigoDeVoo,decolagem->codigoDeVooD);
+    printf("\n");
+    printf("Codigo de voo: %s\n", codigoDeVoo);
+    printf("Status: aeronave decolou\n");
+    printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
+    printf("Numero da pista: %d\n", pista);
 }

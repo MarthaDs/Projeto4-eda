@@ -63,6 +63,7 @@ void printaD(HeaderD *listaD, int horario, int pista);
 void retiraD(HeaderD *listaD);
 void retiraA(HeaderA *listaA);
 void pistas(HeaderA *listaA, HeaderD *listaD, int horas);
+void decreCombs(HeaderA *listaA);
 
 int main (int argc, char *argv[]){
     HeaderA *inicioPouso = inicializaHeader1();
@@ -352,6 +353,7 @@ void pistas(HeaderA *listaA, HeaderD *listaD, int horas){
                 if(listaA->inicioA != NULL){
                     Pouso *pouso = (Pouso*)listaA->inicioA->pouso;
                     if(pouso->combustivel == 0){
+                        printf("\n ALERTA GERAL DE DESVIO DE AERONAVE\n");
                         pista3 = 3;
                         pouso++;
                         printaA(listaA, horas,3);
@@ -380,7 +382,7 @@ void pistas(HeaderA *listaA, HeaderD *listaD, int horas){
             horas += incrementa;
 
             if(contadorCombs%10 == 0){
-                //decrementa combustivel
+                decreCombs(listaA);
                 //verifica se avião caiu
             }
         }
@@ -391,12 +393,14 @@ void pistas(HeaderA *listaA, HeaderD *listaD, int horas){
 void retiraA(HeaderA *listaA){
     NodePouso *primeroPouso = (NodePouso *)listaA->inicioA;
     listaA->inicioA = primeroPouso->prox;
+    listaA->qntdElemetosA--;
     free(primeroPouso);
 }
 
 void retiraD(HeaderD *listaD){
     NodeDecolagem *primeraDeco = (NodeDecolagem *)listaD->inicioD;
     listaD->inicioD = primeraDeco->proxD;
+    listaD->qntdElemetosD--;
     free(primeraDeco);
 }
 
@@ -420,4 +424,13 @@ void printaD(HeaderD *listaD, int horario, int pista){
     printf("Status: aeronave decolou\n");
     printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
     printf("Numero da pista: %d\n", pista);
+}
+
+void decreCombs(HeaderA *listaA){
+    NodePouso *nodepouso = (NodePouso *)listaA->inicioA;
+    for (int i = 0; i <(listaA->qntdElemetosA); i++){
+        Pouso *pouso = (Pouso*)nodepouso->pouso;
+        pouso->combustivel = (pouso->combustivel-1);
+        nodepouso = nodepouso->prox;        
+    }
 }

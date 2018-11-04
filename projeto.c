@@ -377,17 +377,23 @@ void pistas(HeaderA *listaA, HeaderD *listaD, int horas){
             else{
                 pista3--;
             }
-            
+            NodePouso *nodepouso = (NodePouso *)listaA->inicioA;
+            for (int i = 0; i <(listaA->qntdElemetosA); i++){
+                Pouso *pouso2 = (Pouso*)nodepouso->pouso;
+                if((pouso2->combustivel) == 0){
+                    printf("\nALERTA CRITICO, AERONAVE IRA CAIR\n");
+                    retiraA(listaA);
+                    nodepouso = nodepouso->prox;    
+                }   
+            }  
             contadorCombs ++;
             horas += incrementa;
 
             if(contadorCombs%10 == 0){
                 decreCombs(listaA);
-                //verifica se avião caiu
             }
         }
     }
-    printf("pouso: %d - decolage: %d\n", pouso, decolagem);
 }
 
 void retiraA(HeaderA *listaA){
@@ -411,7 +417,12 @@ void printaA(HeaderA *listaA, int horario, int pista){
      printf("\n");
     printf("Codigo de voo: %s\n", codigoDeVoo);
     printf("Status: aeronave pouso\n");
-    printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
+    if(horario%60 == 0){
+        printf("Horario do inicio do procedimento: %d:00\n", horario/60);
+    }
+    else{
+        printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
+    }
     printf("Numero da pista: %d\n", pista);
 }
 
@@ -422,7 +433,12 @@ void printaD(HeaderD *listaD, int horario, int pista){
     printf("\n");
     printf("Codigo de voo: %s\n", codigoDeVoo);
     printf("Status: aeronave decolou\n");
-    printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
+    if (horario%60 == 0){
+        printf("Horario do inicio do procedimento: %d:00\n", horario/60);
+    }
+    else{
+        printf("Horario do inicio do procedimento: %d:%d\n", horario/60, horario%60);
+    }
     printf("Numero da pista: %d\n", pista);
 }
 
